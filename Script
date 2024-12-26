@@ -1,0 +1,90 @@
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+
+-- Criando a janela principal (OrionLib)
+local Principal = OrionLib:MakeWindow({
+    Name = "Exploração",
+    HidePremium = true,
+    SaveConfig = true,
+    ConfigFolder = "ExploracaoGUI"
+})
+
+-- Criando a aba chamada "Exploração"
+local Tab = Principal:MakeTab({
+    Name = "Exploração",
+    Icon = "rbxassetid://6031092567",
+    PremiumOnly = false
+})
+
+-- Lista de objetos no jogo
+local itemsList = {}
+
+for _, obj in pairs(workspace:GetDescendants()) do
+    if obj:IsA("BasePart") then
+        table.insert(itemsList, obj.Name)
+    end
+end
+
+-- Criar um Label para mostrar as informações do item selecionado
+local itemInfoLabel = Tab:AddLabel("Informações do Item: Nenhum item selecionado")
+
+-- Adicionando o dropdown para selecionar os itens
+Tab:AddDropdown({
+    Name = "Selecione um Item ou Bloco",
+    Default = "",
+    Options = itemsList, -- Lista com todos os itens do jogo
+    Callback = function(selectedItem)
+        -- Buscar o objeto pelo nome selecionado
+        local selectedObject = workspace:FindFirstChild(selectedItem)
+
+        if selectedObject then
+            -- Exibir informações sobre o objeto no Label
+            local position = selectedObject.Position
+            local size = selectedObject.Size
+            itemInfoLabel:SetText(
+                string.format(
+                    "Informações do Item:\nNome: %s\nPosição: (%.2f, %.2f, %.2f)\nTamanho: (%.2f, %.2f, %.2f)",
+                    selectedObject.Name, position.X, position.Y, position.Z, size.X, size.Y, size.Z
+                )
+            )
+        else
+            itemInfoLabel:SetText("Informações do Item: Objeto não encontrado")
+        end
+    end
+})
+
+-- Criar um botão para exibir as coordenadas do personagem
+Tab:AddButton({
+    Name = "Mostrar Coordenadas",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local position = character:WaitForChild("HumanoidRootPart").Position
+        OrionLib:MakeNotification({
+            Name = "Coordenadas do Personagem",
+            Content = string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z),
+            Time = 5
+        })
+    end
+})
+
+-- Criar o botão "Copy" para copiar a posição do personagem
+Tab:AddButton({
+    Name = "Copy",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local position = character:WaitForChild("HumanoidRootPart").Position
+        
+        -- Copiar as coordenadas para o clipboard
+        setclipboard(string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z))
+        
+        OrionLib:MakeNotification({
+            Name = "Coordenadas Copiadas",
+            Content = "As coordenadas foram copiadas para o clipboard!",
+            Time = 5
+        })
+    end
+})
+
+-- Iniciar o OrionLib
+OrionLib:Init()
